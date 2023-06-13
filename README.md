@@ -245,3 +245,50 @@ docker run --rm \
         -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
         down 1
 ```
+
+## Как избежать потери данных
+
+Зависит от подхода, принятого в комманде.
+
+Один из вариантов - не удалять даные, а помечать как удаленные.
+
+Применим миграцию `2` из `db/migrations-careful`:
+
+```bash
+docker run --rm \
+    -v $(realpath ./db/migrations-careful):/migrations \
+    migrate/migrate:v4.16.2 \
+        -path=/migrations \
+        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        up
+```
+
+Запишем значение электронной почты сотрудника:
+
+```sql
+UPDATE employees
+SET email='alice.liddell@gopher-corp.com'
+WHERE first_name='Alice' AND last_name='Liddell';
+```
+
+Теперь отменим последнюю миграцию:
+
+```bash
+docker run --rm \
+    -v $(realpath ./db/migrations-careful):/migrations \
+    migrate/migrate:v4.16.2 \
+        -path=/migrations \
+        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        down 1
+```
+
+Посмотрим на таблицу, а затем опять применим миграцию:
+
+```bash
+docker run --rm \
+    -v $(realpath ./db/migrations-careful):/migrations \
+    migrate/migrate:v4.16.2 \
+        -path=/migrations \
+        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        up
+```

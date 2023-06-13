@@ -1,0 +1,6 @@
+BEGIN TRANSACTION;
+
+DROP TABLE employees;
+DROP TABLE positions;
+
+COMMIT;
