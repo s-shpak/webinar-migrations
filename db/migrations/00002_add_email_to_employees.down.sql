@@ -1,0 +1,6 @@
+BEGIN TRANSACTION;
+
+ALTER TABLE employees
+DROP COLUMN email;
+
+COMMIT;
