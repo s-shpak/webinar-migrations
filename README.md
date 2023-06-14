@@ -292,3 +292,50 @@ docker run --rm \
         -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
         up
 ```
+
+# Применение миграций из кода
+
+Миграции можно автоматически применять при старте приложения. См. файл `app/internal/store/db.go`.
+
+Откатим миграции:
+
+```bash
+docker run --rm \
+    -v $(realpath ./db/migrations):/migrations \
+    migrate/migrate:v4.16.2 \
+        -path=/migrations \
+        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        down -all
+```
+
+Запустите приложение, для этого выполните эту комманду из папки `app`:
+
+```bash
+make && ./cmd/migrations/migrations -dsn "postgresql://gopher:gopher@localhost:5432/gopher_corp?sslmode=disable"
+```
+
+Создадим еще раз должность:
+
+```sql
+INSERT INTO positions(title)
+VALUES ('Go developer');
+```
+
+Попробуем создать нового сотрудника:
+
+```bash
+curl --request POST http://127.0.0.1:8080/employee \
+    --header "Content-Type: application/json" \
+    --data '{"first_name": "Bob", "last_name": "Morane", "salary": 75000, "position": "Go developer", "email": "bob.morane@gopher-corp.com"}'
+```
+
+Попробуем добавить еще одного сотрудника (с отрицательной зарплатой):
+
+```bash
+curl --request POST http://127.0.0.1:8080/employee \
+    --header "Content-Type: application/json" \
+    --data '{"first_name": "Charlie", "last_name": "Bucket", "salary": -75000, "position": "Go developer", "email": "charlie.bucket@gopher-corp.com"}' \
+    -v
+```
+
+Мы видим, что произошла ошибка. Это ожидаемо, т.к. БД проверяет положительность зарплаты. Было бы здорово тестировать это, чтобы убедиться, что этот функционал не будет утерян в результате регрессии.
