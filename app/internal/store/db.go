@@ -2,12 +2,13 @@ package store
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"migrations/internal/model"
@@ -30,10 +31,16 @@ func NewDB(dsn string) (*DB, error) {
 	}, nil
 }
 
-func runMigrations(dsn string) error {
-	const migrationsPath = "../db/migrations"
+//go:embed migrations/*.sql
+var migrationsDir embed.FS
 
-	m, err := migrate.New(fmt.Sprintf("file://%s", migrationsPath), dsn)
+func runMigrations(dsn string) error {
+	d, err := iofs.New(migrationsDir, "migrations")
+	if err != nil {
+		return fmt.Errorf("failed to return an iofs driver: %w", err)
+	}
+
+	m, err := migrate.NewWithSourceInstance("iofs", d, dsn)
 	if err != nil {
 		return fmt.Errorf("failed to get a new migrate instance: %w", err)
 	}
@@ -61,4 +68,8 @@ func (db *DB) PutEmployee(ctx context.Context, emp *model.Employee) error {
 		return fmt.Errorf("expected one row to be affected, actually affected %d", rowsAffectedCount)
 	}
 	return nil
+}
+
+func (db *DB) Close() {
+	db.pool.Close()
 }
