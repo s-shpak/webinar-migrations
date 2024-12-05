@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx"
-	"github.com/ory/dockertest"
-	"github.com/ory/dockertest/docker"
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 )
 
 func TestMain(m *testing.M) {
@@ -81,13 +81,13 @@ func runMain(m *testing.M) (int, error) {
 	pg, err := pool.RunWithOptions(
 		&dockertest.RunOptions{
 			Repository: "postgres",
-			Tag:        "15.3",
+			Tag:        "17.2",
 			Name:       "migrations-integration-tests",
 			Env: []string{
 				"POSTGRES_USER=postgres",
 				"POSTGRES_PASSWORD=postgres",
 			},
-			ExposedPorts: []string{"5432"},
+			ExposedPorts: []string{"5432/tcp"},
 		},
 		func(config *docker.HostConfig) {
 			config.AutoRemove = true

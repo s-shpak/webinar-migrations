@@ -3,19 +3,7 @@
 Для запуска БД в контейнере выполните:
 
 ```bash
-make pg
-```
-
-Для остановки:
-
-```bash
-make stop-pg
-```
-
-Для удаления данных из БД:
-
-```bash
-make clean-data
+docker compose up yabinar-3-postgres
 ```
 
 # Сценарий
@@ -24,8 +12,8 @@ make clean-data
 
 ```bash
 docker run --rm \
-    -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    -v $(realpath ./db/migrations-new):/migrations \
+    migrate/migrate:v4.18.1 \
         create \
         -dir /migrations \
         -ext .sql \
@@ -51,20 +39,15 @@ CREATE TABLE employees(
 );
 ```
 
-Попробуем применить миграцию к БД. Контейнеры должны взаимодействовать друг с другом, для этого нужно узнать адрес контейнера с БД в сети docker'а:
-
-```bash
-docker inspect praktikum-webinar-db | grep IPAddress
-```
-
-После этого выполним:
+Попробуем применить миграцию к БД (имя сети можно найти при помощи команды `docker network ls`):
 
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         up
 ```
 
@@ -94,9 +77,10 @@ FROM schema_migrations;
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         down -all
 ```
 
@@ -107,9 +91,10 @@ docker run --rm \
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         up
 ```
 
@@ -120,9 +105,10 @@ docker run --rm \
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         force 1
 ```
 
@@ -145,9 +131,10 @@ DROP TABLE positions;
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         down
 ```
 
@@ -158,9 +145,10 @@ docker run --rm \
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         down -all
 ```
 
@@ -176,10 +164,10 @@ COMMIT;
 
 ```bash
 docker run --rm \
-    -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    -v $(realpath ./db/migrations-new):/migrations \
+    migrate/migrate:v4.18.1 \
         create \
-        -dir /migrations \
+        -dir /migrations-new \
         -ext .sql \
         -seq -digits 5 \
         add_email_to_employees
@@ -212,9 +200,10 @@ COMMIT;
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         up
 ```
 
@@ -240,9 +229,10 @@ FROM employees;
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         down 1
 ```
 
@@ -257,9 +247,10 @@ docker run --rm \
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations-careful):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         up
 ```
 
@@ -276,9 +267,10 @@ WHERE first_name='Alice' AND last_name='Liddell';
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations-careful):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         down 1
 ```
 
@@ -287,9 +279,10 @@ docker run --rm \
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations-careful):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         up
 ```
 
@@ -302,16 +295,17 @@ docker run --rm \
 ```bash
 docker run --rm \
     -v $(realpath ./db/migrations):/migrations \
-    migrate/migrate:v4.16.2 \
+    --network webinar-migrations_yabinar-3 \
+    migrate/migrate:v4.18.1 \
         -path=/migrations \
-        -database postgres://gopher:gopher@172.17.0.2:5432/gopher_corp?sslmode=disable \
+        -database postgres://gopher:gopher@yabinar-3-postgres:5432/gopher_corp?sslmode=disable \
         down -all
 ```
 
 Запустите приложение, для этого выполните эту комманду из папки `app`:
 
 ```bash
-make && ./cmd/migrations/migrations -dsn "postgresql://gopher:gopher@localhost:5432/gopher_corp?sslmode=disable"
+make && ./cmd/employees/migrations -dsn "postgresql://gopher:gopher@localhost:5432/gopher_corp?sslmode=disable"
 ```
 
 Создадим еще раз должность:
@@ -323,6 +317,7 @@ VALUES ('Go developer');
 
 Попробуем создать нового сотрудника:
 
+TODO: fixme
 ```bash
 curl --request POST http://127.0.0.1:8080/employee \
     --header "Content-Type: application/json" \

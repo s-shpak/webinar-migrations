@@ -22,5 +22,5 @@ func run() error {
 		return fmt.Errorf("failed to initialize a new DB: %w", err)
 	}
 	h := server.NewHandlers(db)
-	return server.RunServer(h)
+	return server.RunServer(cfg.Host, h)
 }

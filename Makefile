@@ -1,21 +1,7 @@
 .PHONY: all
 all: ;
 
-.PHONY: pg
-pg:
-	docker run --rm \
-		--name=praktikum-webinar-db \
-		-v $(abspath ./db/init/):/docker-entrypoint-initdb.d \
-		-v $(abspath ./db/data/):/var/lib/postgresql/data \
-		-e POSTGRES_PASSWORD="P@ssw0rd" \
-		-d \
-		-p 5432:5432 \
-		postgres:15.3
+.PHONY: test-integration
+test-integration:
+	go test ./... -v -count=1 -p=1 -tags="integration_tests"
 
-.PHONY: stop-pg
-stop-pg:
-	docker stop praktikum-webinar-db
-
-.PHONY: clean-data
-clean-data:
-	sudo rm -rf ./db/data/
