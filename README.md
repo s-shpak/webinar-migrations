@@ -288,7 +288,7 @@ docker run --rm \
 
 # Применение миграций из кода
 
-Миграции можно автоматически применять при старте приложения. См. файл `app/internal/store/db.go`.
+Миграции можно автоматически применять при старте приложения. См. файл `internal/store/db.go`.
 
 Откатим миграции:
 
@@ -302,7 +302,7 @@ docker run --rm \
         down -all
 ```
 
-Запустите приложение, для этого выполните эту комманду из папки `app`:
+Запустите приложение:
 
 ```bash
 make && ./cmd/employees/migrations -dsn "postgresql://gopher:gopher@localhost:5432/gopher_corp?sslmode=disable"
@@ -337,4 +337,10 @@ curl --request POST http://127.0.0.1:8080/employee \
 
 # Интеграционное тестирование
 
-См. `app/internal/store/db_integration_test.go`
+См. `internal/store/db_integration_test.go`.
+
+Запустить интеграционные тесты можно при помощи команды:
+
+```go
+go test ./... -tags=integration_tests -v
+```
